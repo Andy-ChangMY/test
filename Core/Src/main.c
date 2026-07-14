@@ -51,7 +51,18 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+uint8_t MEMS_READ_REG(uint8_t reg_addr)
+{
+  uint8_t read_buf = reg_addr | 0x80;
+  uint8_t recv_buf = 0;
 
+  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);
+  HAL_SPI_Transmit(&hspi1, &read_buf, 1, HAL_MAX_DELAY);
+  HAL_SPI_Receive(&hspi1, &recv_buf, 1, HAL_MAX_DELAY);
+  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);
+
+  return recv_buf;
+}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -93,7 +104,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   uint8_t REG_WHO_AM_I = 0x0F;
 
-  uint8_t READ_WHO_AM_I = REG_WHO_AM_I | 0x80; 
+  uint8_t READ_WHO_AM_I = REG_WHO_AM_I | 0x80;
 
   uint8_t recv_buf = 0;
 
@@ -106,10 +117,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(&hspi1, &READ_WHO_AM_I, 1, HAL_MAX_DELAY);
-    HAL_SPI_Receive(&hspi1, &recv_buf, 1, HAL_MAX_DELAY);
-    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);
+    // HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);
+    // HAL_SPI_Transmit(&hspi1, &READ_WHO_AM_I, 1, HAL_MAX_DELAY);
+    // HAL_SPI_Receive(&hspi1, &recv_buf, 1, HAL_MAX_DELAY);
+    // HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);
+
+    recv_buf = MEMS_READ_REG(REG_WHO_AM_I);
 
     HAL_UART_Transmit(&huart5, &recv_buf, 1, HAL_MAX_DELAY);
     HAL_Delay(500);
